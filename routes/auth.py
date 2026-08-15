@@ -2,10 +2,10 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from werkzeug.security import check_password_hash
 from models import db
 from models.user import User
-from patterns.user_factory import UserFactory
-
+from patterns.user_factory import IndividualUserCreator, CompanyUserCreator
 from models.individual_profile import IndividualProfile
 from models.company_profile import CompanyProfile
+
 auth_bp = Blueprint("auth", __name__)
 
 
@@ -28,7 +28,17 @@ def register():
         elif user_type == "company":
             extra_fields["companyName"] = name_value
 
-        user, profile = UserFactory.create_user(email, password, user_type, **extra_fields)
+        CREATOR_MAP = {
+            "individual": IndividualUserCreator(),
+            "company": CompanyUserCreator(),
+        }
+
+        creator = CREATOR_MAP.get(user_type)
+        if not creator:
+            flash("Unknown user type.")
+            return redirect(url_for("home"))
+
+        user, profile = creator.create_user_and_profile(email, password, user_type, **extra_fields)
 
         session["userId"] = user.userId
         session["userType"] = user.userType
@@ -59,9 +69,6 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("auth.login"))
-
-
-
 
 
 @auth_bp.route("/dashboard")
