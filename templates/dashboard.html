@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | Talent Nest</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='sidebar.css') }}" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+</head>
+<body>
+  <nav class="site-nav">
+    <button class="sidebar-toggle">
+      <span class="material-symbols-rounded">menu</span>
+    </button>
+  </nav>
+
+  <div class="container">
+    <aside class="sidebar collapsed">
+      <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='images/sidebar-logo.png') }}" alt="logo" class="header-logo" />
+        <button class="sidebar-toggle">
+          <span class="material-symbols-rounded">chevron_left</span>
+        </button>
+      </div>
+
+      <div class="sidebar-content">
+        <form action="#" class="search-form" onsubmit="return false;">
+          <span class="material-symbols-rounded">search</span>
+          <input type="search" placeholder="Search..." />
+        </form>
+
+        <ul class="menu-list">
+          {% if session['userType'] == 'individual' %}
+          <li class="menu-item">
+            <a href="{{ url_for('auth.dashboard') }}" class="menu-link active">
+              <span class="material-symbols-rounded">dashboard</span>
+              <span class="menu-label">Dashboard</span>
+            </a>
+          </li>
+          <li class="menu-item">
+          <a href="{{ url_for('portfolio.upload') }}" class="menu-link">
+             <span class="material-symbols-rounded">upload_file</span>
+             <span class="menu-label">My Portfolio</span>
+           </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <span class="material-symbols-rounded">work</span>
+              <span class="menu-label">Browse Jobs</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <span class="material-symbols-rounded">description</span>
+              <span class="menu-label">My Applications</span>
+            </a>
+          </li>
+
+          {% elif session['userType'] == 'company' %}
+          <li class="menu-item">
+            <a href="{{ url_for('auth.dashboard') }}" class="menu-link active">
+              <span class="material-symbols-rounded">dashboard</span>
+              <span class="menu-label">Dashboard</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <span class="material-symbols-rounded">post_add</span>
+              <span class="menu-label">Post a Job</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <span class="material-symbols-rounded">group</span>
+              <span class="menu-label">Search Candidates</span>
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="#" class="menu-link">
+              <span class="material-symbols-rounded">list_alt</span>
+              <span class="menu-label">Applicants</span>
+            </a>
+          </li>
+          {% endif %}
+
+          <li class="menu-item">
+            <a href="{{ url_for('auth.logout') }}" class="menu-link">
+              <span class="material-symbols-rounded">logout</span>
+              <span class="menu-label">Logout</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="theme-toggle">
+          <div class="theme-label">
+            <span class="theme-icon material-symbols-rounded">dark_mode</span>
+            <span class="theme-text">Dark Mode</span>
+          </div>
+          <div class="theme-toggle-track">
+            <div class="theme-toggle-indicator"></div>
+          </div>
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <h1 class="page-title">
+        Welcome, {{ display_name }}
+      </h1>
+      <p class="card">
+        {% if session['userType'] == 'individual' %}
+          You're logged in as an individual professional. Use the sidebar to manage your portfolio and browse jobs.
+        {% elif session['userType'] == 'company' %}
+          You're logged in as a company. Use the sidebar to post jobs and search verified candidates.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='sidebar.js') }}"></script>
+</body>
+</html>

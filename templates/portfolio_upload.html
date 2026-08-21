@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Portfolio</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .upload-form { max-width: 500px; margin: 40px auto; padding: 20px; }
+    .upload-form input, .upload-form select { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }
+    .attachment-list { max-width: 500px; margin: 0 auto; }
+    .attachment-item { padding: 10px; border-bottom: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <div class="upload-form">
+    <h2>Upload Portfolio Item</h2>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}<p style="color:red">{{ messages[0] }}</p>{% endif %}
+    {% endwith %}
+    <form method="POST">
+      <select name="category" required>
+        <option value="certificate">Certificate (must be .pdf)</option>
+        <option value="project">Project (must be a link)</option>
+        <option value="photo">Photo (.jpg/.png)</option>
+      </select>
+      <input type="text" name="title" placeholder="Title" required>
+      <input type="text" name="file_url" placeholder="File URL or path (e.g. cert.pdf or https://github.com/...)" required>
+      <select name="visibility" required>
+        <option value="public">Public</option>
+        <option value="private">Private</option>
+        <option value="verified_companies">Verified Companies Only</option>
+      </select>
+      <button type="submit">Upload</button>
+    </form>
+  </div>
+
+  <div class="attachment-list">
+    <h3>Your Uploads</h3>
+    {% for a in attachments %}
+      <div class="attachment-item">{{ a.category }} — {{ a.title }} ({{ a.visibilityLevel }})</div>
+    {% else %}
+      <p>No uploads yet.</p>
+    {% endfor %}
+  </div>
+
+  <p style="text-align:center"><a href="{{ url_for('auth.dashboard') }}">← Back to Dashboard</a></p>
+</body>
+</html>
