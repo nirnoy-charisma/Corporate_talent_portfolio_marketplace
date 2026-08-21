@@ -11,6 +11,8 @@ from models.portfolio_attachment import PortfolioAttachment
 from routes.auth import auth_bp
 from flask import render_template
 from routes.portfolio import portfolio_bp
+from routes.jobs import jobs_bp
+from models.application import Application
 load_dotenv()
 
 def create_app():
@@ -18,7 +20,7 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
     app.register_blueprint(auth_bp)
-    from routes.portfolio import portfolio_bp
+    app.register_blueprint(jobs_bp)
 
     app.register_blueprint(portfolio_bp)
     db.init_app(app)

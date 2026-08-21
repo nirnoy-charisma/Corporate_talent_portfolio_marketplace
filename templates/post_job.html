@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Post a Job</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", sans-serif; }
+  body { background: #f4f6f8; min-height: 100vh; padding: 40px 20px; }
+  .page-wrap { max-width: 900px; margin: 0 auto; }
+  .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .page-header h1 { font-size: 1.6rem; color: #222; }
+  .back-link { color: #00838f; text-decoration: none; font-weight: 500; }
+  .back-link:hover { text-decoration: underline; }
+  .layout { display: grid; grid-template-columns: 380px 1fr; gap: 24px; }
+  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+  .card { background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+  .card h2 { font-size: 1.1rem; margin-bottom: 16px; color: #333; }
+  .flash-msg { background: #fff3f3; color: #c0392b; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; font-size: 0.9rem; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 0.85rem; color: #555; margin-bottom: 6px; font-weight: 500; }
+  .field select, .field input, .field textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px;
+    font-size: 0.95rem; outline: none; font-family: inherit;
+  }
+  .field select:focus, .field input:focus, .field textarea:focus { border-color: #00bcd4; }
+  .salary-row { display: flex; gap: 10px; }
+  .submit-btn {
+    width: 100%; padding: 12px; background: #00bcd4; color: #fff; border: none;
+    border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer;
+  }
+  .submit-btn:hover { background: #0097a7; }
+  .job-item { padding: 14px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; }
+  .job-title { font-weight: 600; color: #222; }
+  .job-meta { font-size: 0.8rem; color: #888; margin-top: 4px; }
+  .status-tag { font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; font-weight: 500; }
+  .status-open { background: #e6f7ea; color: #1e824c; }
+  .status-closed { background: #fdecea; color: #c0392b; }
+  .close-link { font-size: 0.8rem; color: #c0392b; text-decoration: none; margin-top: 6px; display: inline-block; }
+  .empty-state { text-align: center; color: #999; padding: 30px 0; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+  <div class="page-wrap">
+    <div class="page-header">
+      <h1>Post a Job</h1>
+      <a href="{{ url_for('auth.dashboard') }}" class="back-link">← Back to Dashboard</a>
+    </div>
+
+    <div class="layout">
+      <div class="card">
+        <h2>New Job Vacancy</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}<div class="flash-msg">{{ messages[0] }}</div>{% endif %}
+        {% endwith %}
+        <form method="POST">
+          <div class="field">
+            <label>Job Title</label>
+            <input type="text" name="title" placeholder="e.g. Backend Developer" required>
+          </div>
+          <div class="field">
+            <label>Requirements</label>
+            <textarea name="requirements" rows="4" placeholder="Key skills, experience level..."></textarea>
+          </div>
+          <div class="field salary-row">
+            <div style="flex:1">
+              <label>Min Salary</label>
+              <input type="number" name="salaryMin" placeholder="30000">
+            </div>
+            <div style="flex:1">
+              <label>Max Salary</label>
+              <input type="number" name="salaryMax" placeholder="50000">
+            </div>
+          </div>
+          <div class="field">
+            <label>Role Type</label>
+            <select name="roleType" required>
+              <option value="remote">Remote</option>
+              <option value="on-site">On-site</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </div>
+          <button type="submit" class="submit-btn">Post Job</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Your Job Postings</h2>
+        {% for job in jobs %}
+          <div class="job-item">
+            <div class="job-title">{{ job.title }}</div>
+            <div class="job-meta">{{ job.roleType }} · {{ job.postedDate.strftime('%d %b %Y') }}</div>
+            <span class="status-tag status-{{ job.status }}">{{ job.status }}</span>
+            {% if job.status == 'open' %}
+              <br><a href="{{ url_for('jobs.close_job', job_id=job.jobId) }}" class="close-link">Close this job</a>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="empty-state">No jobs posted yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
