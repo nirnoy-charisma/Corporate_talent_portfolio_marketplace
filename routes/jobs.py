@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from models import db
+from models.individual_profile import IndividualProfile
 from models.company_profile import CompanyProfile
 from models.job_vacancy import JobVacancy
-from patterns.application_facade import ApplicationFacade
 from models.application import Application
-from models.company_profile import CompanyProfile
+from patterns.application_facade import ApplicationFacade
+from patterns.attachment_proxy import AttachmentAccessProxy
 jobs_bp = Blueprint("jobs", __name__)
 
 
@@ -33,8 +34,16 @@ def post_job():
 
     my_jobs = JobVacancy.query.filter_by(companyId=company.companyId).order_by(JobVacancy.postedDate.desc()).all()
     return render_template("post_job.html", jobs=my_jobs)
+@jobs_bp.route("/jobs/my-applications")
+def my_applications():
+    if "userId" not in session or session.get("userType") != "individual":
+        flash("Only individual accounts can view applications.")
+        return redirect(url_for("home"))
 
+    profile = IndividualProfile.query.filter_by(userId=session["userId"]).first()
+    applications = Application.query.filter_by(profileId=profile.profileId).order_by(Application.appliedDate.desc()).all()
 
+    return render_template("my_applications.html", applications=applications)
 @jobs_bp.route("/jobs/close/<job_id>")
 def close_job(job_id):
     if "userId" not in session or session.get("userType") != "company":
@@ -79,6 +88,29 @@ def apply_to_job(job_id):
 
     return redirect(url_for("jobs.browse_jobs"))
 
+from patterns.attachment_proxy import AttachmentAccessProxy
+
+@jobs_bp.route("/candidates/search")
+def search_candidates():
+    if "userId" not in session or session.get("userType") != "company":
+        flash("Only company accounts can search candidates.")
+        return redirect(url_for("home"))
+
+    keyword = request.args.get("keyword", "").strip()
+
+    query = IndividualProfile.query
+    if keyword:
+        query = query.filter(
+            db.or_(
+                IndividualProfile.fullName.ilike(f"%{keyword}%"),
+                IndividualProfile.headline.ilike(f"%{keyword}%")
+            )
+        )
+
+    # Only show profiles that aren't fully private
+    candidates = query.filter(IndividualProfile.profileVisibility != "private").all()
+
+    return render_template("search_candidates.html", candidates=candidates, keyword=keyword)
 
 @jobs_bp.route("/jobs/applicants")
 def view_applicants():

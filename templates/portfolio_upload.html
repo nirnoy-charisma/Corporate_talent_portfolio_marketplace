@@ -1,47 +1,154 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My Portfolio</title>
-  <style>
-    body { font-family: Arial, sans-serif; }
-    .upload-form { max-width: 500px; margin: 40px auto; padding: 20px; }
-    .upload-form input, .upload-form select { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }
-    .attachment-list { max-width: 500px; margin: 0 auto; }
-    .attachment-item { padding: 10px; border-bottom: 1px solid #ddd; }
-  </style>
+<meta charset="UTF-8">
+<title>My Portfolio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", sans-serif; }
+  body { background: #f4f6f8; min-height: 100vh; padding: 40px 20px; }
+
+  .page-wrap { max-width: 900px; margin: 0 auto; }
+  .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .page-header h1 { font-size: 1.6rem; color: #222; }
+  .back-link { color: #00838f; text-decoration: none; font-weight: 500; }
+  .back-link:hover { text-decoration: underline; }
+
+  .layout { display: grid; grid-template-columns: 380px 1fr; gap: 24px; }
+  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+
+  .card { background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+
+  .card h2 { font-size: 1.1rem; margin-bottom: 16px; color: #333; }
+
+  .flash-msg { background: #fff3f3; color: #c0392b; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; font-size: 0.9rem; }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 0.85rem; color: #555; margin-bottom: 6px; font-weight: 500; }
+  .field select, .field input[type="text"], .field input[type="file"] {
+    width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px;
+    font-size: 0.95rem; outline: none; transition: border-color 0.15s;
+  }
+  .field select:focus, .field input:focus { border-color: #00bcd4; }
+
+  .file-field, .link-field { display: none; }
+  .file-field.active, .link-field.active { display: block; }
+
+  .submit-btn {
+    width: 100%; padding: 12px; background: #00bcd4; color: #fff; border: none;
+    border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.15s;
+  }
+  .submit-btn:hover { background: #0097a7; }
+
+  .attachment-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px;
+  }
+  .attachment-info { display: flex; align-items: center; gap: 12px; }
+  .attachment-icon { font-size: 1.4rem; }
+  .attachment-title { font-weight: 600; color: #222; font-size: 0.95rem; }
+  .attachment-meta { font-size: 0.8rem; color: #888; margin-top: 2px; }
+  .visibility-tag {
+    font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; font-weight: 500;
+  }
+  .visibility-public { background: #e6f7ea; color: #1e824c; }
+  .visibility-private { background: #fdecea; color: #c0392b; }
+  .visibility-verified_companies { background: #e8f0fe; color: #1a73e8; }
+
+  .empty-state { text-align: center; color: #999; padding: 30px 0; font-size: 0.9rem; }
+</style>
 </head>
 <body>
-  <div class="upload-form">
-    <h2>Upload Portfolio Item</h2>
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}<p style="color:red">{{ messages[0] }}</p>{% endif %}
-    {% endwith %}
-    <form method="POST">
-      <select name="category" required>
-        <option value="certificate">Certificate (must be .pdf)</option>
-        <option value="project">Project (must be a link)</option>
-        <option value="photo">Photo (.jpg/.png)</option>
-      </select>
-      <input type="text" name="title" placeholder="Title" required>
-      <input type="text" name="file_url" placeholder="File URL or path (e.g. cert.pdf or https://github.com/...)" required>
-      <select name="visibility" required>
-        <option value="public">Public</option>
-        <option value="private">Private</option>
-        <option value="verified_companies">Verified Companies Only</option>
-      </select>
-      <button type="submit">Upload</button>
-    </form>
+  <div class="page-wrap">
+    <div class="page-header">
+      <h1>My Portfolio</h1>
+      <a href="{{ url_for('auth.dashboard') }}" class="back-link">← Back to Dashboard</a>
+    </div>
+
+    <div class="layout">
+      <div class="card">
+        <h2>Upload New Item</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}<div class="flash-msg">{{ messages[0] }}</div>{% endif %}
+        {% endwith %}
+
+        <form method="POST" enctype="multipart/form-data" id="upload-form">
+          <div class="field">
+            <label>Category</label>
+            <select name="category" id="category-select" required>
+              <option value="certificate">Certificate (PDF)</option>
+              <option value="project">Project (Link)</option>
+              <option value="photo">Photo (JPG/PNG)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Title</label>
+            <input type="text" name="title" placeholder="e.g. AWS Certified Developer" required>
+          </div>
+
+          <div class="field file-field active" id="file-field">
+            <label>Choose File</label>
+            <input type="file" name="file" id="file-input">
+          </div>
+
+          <div class="field link-field" id="link-field">
+            <label>Project Link</label>
+            <input type="text" name="project_link" placeholder="https://github.com/yourproject">
+          </div>
+
+          <div class="field">
+            <label>Visibility</label>
+            <select name="visibility" required>
+              <option value="public">Public</option>
+              <option value="private">Private</option>
+              <option value="verified_companies">Verified Companies Only</option>
+            </select>
+          </div>
+
+          <button type="submit" class="submit-btn">Upload</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Your Uploads</h2>
+        {% for a in attachments %}
+          <div class="attachment-item">
+            <div class="attachment-info">
+              <span class="attachment-icon">
+                {% if a.category == 'certificate' %}📄{% elif a.category == 'photo' %}🖼️{% else %}🔗{% endif %}
+              </span>
+              <div>
+                <div class="attachment-title">{{ a.title }}</div>
+                <div class="attachment-meta">{{ a.category }} · {{ a.datePublished.strftime('%d %b %Y') }}</div>
+              </div>
+            </div>
+            <span class="visibility-tag visibility-{{ a.visibilityLevel }}">{{ a.visibilityLevel.replace('_', ' ') }}</span>
+          </div>
+        {% else %}
+          <div class="empty-state">No uploads yet — add your first item.</div>
+        {% endfor %}
+      </div>
+    </div>
   </div>
 
-  <div class="attachment-list">
-    <h3>Your Uploads</h3>
-    {% for a in attachments %}
-      <div class="attachment-item">{{ a.category }} — {{ a.title }} ({{ a.visibilityLevel }})</div>
-    {% else %}
-      <p>No uploads yet.</p>
-    {% endfor %}
-  </div>
+  <script>
+    const categorySelect = document.getElementById("category-select");
+    const fileField = document.getElementById("file-field");
+    const linkField = document.getElementById("link-field");
 
-  <p style="text-align:center"><a href="{{ url_for('auth.dashboard') }}">← Back to Dashboard</a></p>
+    function toggleFields() {
+      if (categorySelect.value === "project") {
+        fileField.classList.remove("active");
+        linkField.classList.add("active");
+      } else {
+        fileField.classList.add("active");
+        linkField.classList.remove("active");
+      }
+    }
+
+    categorySelect.addEventListener("change", toggleFields);
+    toggleFields();
+  </script>
 </body>
 </html>
