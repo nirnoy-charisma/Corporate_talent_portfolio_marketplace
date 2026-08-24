@@ -18,7 +18,19 @@
     <p>{{ profile.headline }}</p>
     <hr style="margin:16px 0">
     {% for a in attachments %}
-      <div class="item">{{ a.category }} — {{ a.title }} ({{ a.visibilityLevel }})</div>
+      <div class="item">
+        {% if a.category == 'project' %}
+          <a href="{{ a.fileUrl }}" target="_blank" rel="noopener noreferrer">{{ a.title }}</a>
+        {% elif a.category == 'photo' %}
+          <a href="{{ url_for('static', filename=a.fileUrl) }}" target="_blank" rel="noopener noreferrer">
+            <img src="{{ url_for('static', filename=a.fileUrl) }}" alt="{{ a.title }}" style="max-width:100%; border-radius:6px; display:block; margin-bottom:6px;">
+          </a>
+          {{ a.title }}
+        {% else %}
+          <a href="{{ url_for('static', filename=a.fileUrl) }}" target="_blank" rel="noopener noreferrer">{{ a.title }}</a>
+        {% endif %}
+        <span style="color:#999; font-size:0.85rem;"> ({{ a.category }}, {{ a.visibilityLevel }})</span>
+      </div>
     {% else %}
       <div class="empty">No visible portfolio items — either the candidate has none, or their visibility settings restrict what you can see.</div>
     {% endfor %}

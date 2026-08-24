@@ -51,7 +51,7 @@
         <div class="app-top">
           <div>
             <div class="app-job">{{ app.job.title }}</div>
-            <div class="app-snapshot">Portfolio: {{ app.portfolioSnapshot }}</div>
+            <div class="app-snapshot">Portfolio: {{ app.portfolioSnapshot }} — <a href="{{ url_for('portfolio.view_candidate_portfolio', profile_id=app.profileId) }}">View full portfolio</a></div>
             <div class="app-date">Applied {{ app.appliedDate.strftime('%d %b %Y') }}</div>
           </div>
           <span class="status-tag status-{{ app.status }}">{{ app.status }}</span>
